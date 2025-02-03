@@ -1,0 +1,20 @@
+# Ignore .NET build artifacts
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.log
+
+# Ignore IDE-specific settings
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore environment variables & secrets
+.env
+appsettings.json
+appsettings.Development.json

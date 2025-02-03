@@ -1,0 +1,120 @@
+@page "/calculator"
+@using CalculatorShared.Models
+@using CalculatorUI.Services
+
+@inject CalculatorClient CalculatorClient
+
+<h3 class="calculator-title">Calculator</h3>
+
+<div class="calculator-container">
+    <div class="input-group">
+        <label>Number 1:</label>
+        <input type="number" @bind="calculationRequest.Number1" class="input-box" />
+        <label>
+            <input type="checkbox" @bind="UseStoredNumber" /> Use Stored Number
+        </label>
+    </div>
+
+    <div class="input-group">
+        <label>Number 2:</label>
+        <input type="number" @bind="calculationRequest.Number2" class="input-box" />
+    </div>
+
+    <div class="input-group">
+        <label>Operation:</label>
+        <select @bind="calculationRequest.Operation" class="select-box">
+            <option value="add">Add</option>
+            <option value="subtract">Subtract</option>
+            <option value="multiply">Multiply</option>
+            <option value="divide">Divide</option>
+        </select>
+    </div>
+
+    <div class="button-container">
+        <button @onclick="PerformCalculation" class="calculate-button">Calculate</button>
+        <button @onclick="StoreNumber" class="store-button">Store Number</button>
+        <button @onclick="ResetCalculator" class="reset-button">Reset</button>
+    </div>
+
+    <h4 class="result-label">Result: <span class="result-value">@Result</span></h4>
+    <h4 class="stored-label">Stored Number: <span class="stored-value">@StoredNumber</span></h4>
+
+    @if (!string.IsNullOrEmpty(ErrorMessage))
+    {
+        <div class="error-container">
+            <p class="error-message">@ErrorMessage</p>
+        </div>
+    }
+</div>
+
+@code {
+    private CalculationRequest calculationRequest = new() { Operation = "add" };
+    private double? Result { get; set; }
+    private double? StoredNumber { get; set; }
+    private bool UseStoredNumber { get; set; }
+    private string ErrorMessage { get; set; } = string.Empty;
+
+    private async Task PerformCalculation()
+    {
+        try
+        {
+            if (UseStoredNumber)
+            {
+                calculationRequest.Number1 = StoredNumber ?? 0;
+            }
+
+            var result = await CalculatorClient.CalculateAsync(calculationRequest);
+
+            if (result.HasValue)
+            {
+                Result = result;
+                ErrorMessage = string.Empty; // Clear previous errors
+            }
+            else
+            {
+                ErrorMessage = "Calculation failed. Please check your input.";
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error: {ex.Message}";
+        }
+    }
+
+    private async Task StoreNumber()
+    {
+        try
+        {
+            if (Result.HasValue)
+            {
+                await CalculatorClient.StoreNumberAsync(Result.Value);
+                StoredNumber = Result;
+                ErrorMessage = string.Empty; // Clear previous errors
+            }
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error storing number: {ex.Message}";
+        }
+    }
+
+    private async Task ResetCalculator()
+    {
+        try
+        {
+            calculationRequest.Number1 = 0;
+            calculationRequest.Number2 = 0;
+            calculationRequest.Operation = "add";
+            UseStoredNumber = false;
+            Result = null;
+            StoredNumber = null;
+
+            await CalculatorClient.ResetStoredNumberAsync();
+            ErrorMessage = string.Empty; // Clear previous errors
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"Error resetting calculator: {ex.Message}";
+        }
+    }
+}

@@ -1,0 +1,141 @@
+/* General Styles */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 0;
+}
+
+/* Calculator Container */
+.calculator-container {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    margin: auto;
+    margin-top: 50px;
+}
+
+/* Title */
+.calculator-title {
+    text-align: center;
+    font-size: 24px;
+    color: #333;
+}
+
+/* Input Group */
+.input-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Labels */
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+/* Input Fields */
+.input-box, .select-box {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+/* Button */
+.calculate-button {
+    background-color: #007bff;
+    color: white;
+    font-size: 16px;
+    padding: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.calculate-button:hover {
+    background-color: #0056b3;
+}
+
+/* Result Display */
+.result-label {
+    font-size: 20px;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.result-value {
+    color: #007bff;
+}
+
+.error-container {
+    background-color: rgba(255, 0, 0, 0.1); /* Light red background */
+    border: 1px solid #ff0000; /* Red border */
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.error-message {
+    color: #d32f2f;
+    font-weight: bold;
+    font-size: 16px;
+    margin: 0;
+}
+
+/* Button Container Styling */
+.button-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+    margin-top: 10px;
+}
+
+/* Common Button Styling */
+button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+/* Primary Button - Calculate */
+.calculate-button {
+    background-color: #007bff;
+    color: white;
+}
+
+.calculate-button:hover {
+    background-color: #0056b3;
+}
+
+/* Secondary Button - Store Number */
+.store-button {
+    background-color: #28a745;
+    color: white;
+}
+
+.store-button:hover {
+    background-color: #218838;
+}
+
+/* Danger Button - Reset */
+.reset-button {
+    background-color: #dc3545;
+    color: white;
+}
+
+.reset-button:hover {
+    background-color: #c82333;
+}
