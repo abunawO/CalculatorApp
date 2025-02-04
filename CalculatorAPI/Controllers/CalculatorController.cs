@@ -4,6 +4,7 @@ using CalculatorShared.Models;
 
 namespace CalculatorAPI.Controllers
 {
+
     [ApiController]
     [Route("api/[controller]")]
     public class CalculatorController : ControllerBase
@@ -37,17 +38,17 @@ namespace CalculatorAPI.Controllers
         }
 
         [HttpPost("store-number")]
-        public async Task<IActionResult> StoreNumber([FromBody] double number)
+        public async Task<IActionResult> StoreNumber([FromBody] StoreNumberRequest request)
         {
-            if (double.IsNaN(number) || double.IsInfinity(number))
+            if (request == null || double.IsNaN(request.Number) || double.IsInfinity(request.Number))
             {
                 return BadRequest(new { Message = "Invalid number provided." });
             }
 
             try
             {
-                await _calculatorService.StoreNumberAsync(number);
-                return Ok(new { Message = "Number stored successfully", StoredNumber = number });
+                await _calculatorService.StoreNumberAsync(request.Number);
+                return Ok(new { Message = $"{request.Source} stored successfully", StoredNumber = request.Number, Source = request.Source });
             }
             catch (Exception ex)
             {

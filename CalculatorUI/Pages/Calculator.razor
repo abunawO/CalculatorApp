@@ -9,15 +9,26 @@
 <div class="calculator-container">
     <div class="input-group">
         <label>Number 1:</label>
-        <input type="number" @bind="calculationRequest.Number1" class="input-box" />
-        <label>
-            <input type="checkbox" @bind="UseStoredNumber" /> Use Stored Number
-        </label>
+        <input type="number" @bind="calculationRequest.Number1" class="input-box" disabled="@DisableNumber1" />
     </div>
 
     <div class="input-group">
         <label>Number 2:</label>
-        <input type="number" @bind="calculationRequest.Number2" class="input-box" />
+        <input type="number" @bind="calculationRequest.Number2" class="input-box" disabled="@DisableNumber2" />
+    </div>
+
+    <div class="input-group checkbox-group">
+        <label for="useStoredNumber">Use Stored Number:</label>
+        <input id="useStoredNumber" type="checkbox" @bind="UseStoredNumber" @bind:event="onchange"
+            class="checkbox-input" />
+    </div>
+
+    <div class="input-group">
+        <label>Store Number:</label>
+        <select @bind="SelectedStoreOption" class="select-box">
+            <option value="Number1">Store Number 1</option>
+            <option value="Number2">Store Number 2</option>
+        </select>
     </div>
 
     <div class="input-group">
@@ -53,6 +64,10 @@
     private double? StoredNumber { get; set; }
     private bool UseStoredNumber { get; set; }
     private string ErrorMessage { get; set; } = string.Empty;
+    private string SelectedStoreOption { get; set; } = "Number1";
+
+    private bool DisableNumber1 => UseStoredNumber && SelectedStoreOption == "Number1";
+    private bool DisableNumber2 => UseStoredNumber && SelectedStoreOption == "Number2";
 
     private async Task PerformCalculation()
     {
@@ -60,7 +75,10 @@
         {
             if (UseStoredNumber)
             {
-                calculationRequest.Number1 = StoredNumber ?? 0;
+                if (SelectedStoreOption == "Number1")
+                    calculationRequest.Number1 = StoredNumber ?? 0;
+                else if (SelectedStoreOption == "Number2")
+                    calculationRequest.Number2 = StoredNumber ?? 0;
             }
 
             var result = await CalculatorClient.CalculateAsync(calculationRequest);
@@ -85,12 +103,17 @@
     {
         try
         {
-            if (Result.HasValue)
+            if (SelectedStoreOption == "Number1")
             {
-                await CalculatorClient.StoreNumberAsync(Result.Value);
-                StoredNumber = Result;
-                ErrorMessage = string.Empty;
+                StoredNumber = calculationRequest.Number1;
             }
+            else if (SelectedStoreOption == "Number2")
+            {
+                StoredNumber = calculationRequest.Number2;
+            }
+
+            await CalculatorClient.StoreNumberAsync(StoredNumber.Value);
+            ErrorMessage = string.Empty;
         }
         catch (Exception ex)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CalculatorAPI.Data;
 using CalculatorAPI.Models;
@@ -44,7 +45,6 @@ namespace CalculatorAPI.Services
                     _ => throw new ArgumentException("Invalid operation.")
                 };
 
-                await StoreNumberAsync(result);
                 return result;
             }
             catch (Exception ex)
@@ -58,20 +58,27 @@ namespace CalculatorAPI.Services
         {
             try
             {
-                var existing = await _context.StoredNumbers.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
-                if (existing != null)
-                {
-                    existing.Number = number;
-                }
-                else
-                {
-                    await _context.StoredNumbers.AddAsync(new StoredNumber { Number = number });
-                }
+                var storedNumber = new StoredNumber { Number = number };
+                await _context.StoredNumbers.AddAsync(storedNumber);
                 await _context.SaveChangesAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred in StoreNumberAsync.");
+                _logger.LogError(ex, "Error occurred while storing number.");
+                throw;
+            }
+        }
+
+        public async Task<double?> GetStoredNumberAsync()
+        {
+            try
+            {
+                var storedNumber = await _context.StoredNumbers.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
+                return storedNumber?.Number;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while retrieving stored number.");
                 throw;
             }
         }
@@ -89,21 +96,7 @@ namespace CalculatorAPI.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error occurred in ResetStoredNumberAsync.");
-                throw;
-            }
-        }
-
-        public async Task<double?> GetStoredNumberAsync()
-        {
-            try
-            {
-                var storedNumber = await _context.StoredNumbers.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
-                return storedNumber?.Number;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred in GetStoredNumberAsync.");
+                _logger.LogError(ex, "Error occurred while resetting stored numbers.");
                 throw;
             }
         }
