@@ -14,7 +14,7 @@ namespace CalculatorUI.Services
         {
             _httpClient = httpClient;
             _logger = logger;
-            _httpClient.BaseAddress = new Uri("http://localhost:5101/"); // Ensure correct API base URL
+            _httpClient.BaseAddress = new Uri("http://localhost:5101/");
         }
 
         // Perform a calculation

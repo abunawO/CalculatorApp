@@ -68,7 +68,7 @@
             if (result.HasValue)
             {
                 Result = result;
-                ErrorMessage = string.Empty; // Clear previous errors
+                ErrorMessage = string.Empty;
             }
             else
             {
@@ -89,7 +89,7 @@
             {
                 await CalculatorClient.StoreNumberAsync(Result.Value);
                 StoredNumber = Result;
-                ErrorMessage = string.Empty; // Clear previous errors
+                ErrorMessage = string.Empty;
             }
         }
         catch (Exception ex)
@@ -110,7 +110,7 @@
             StoredNumber = null;
 
             await CalculatorClient.ResetStoredNumberAsync();
-            ErrorMessage = string.Empty; // Clear previous errors
+            ErrorMessage = string.Empty;
         }
         catch (Exception ex)
         {
