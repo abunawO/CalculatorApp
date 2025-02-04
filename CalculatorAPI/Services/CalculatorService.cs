@@ -3,83 +3,109 @@ using System.Threading.Tasks;
 using CalculatorAPI.Data;
 using CalculatorAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace CalculatorAPI.Services
 {
     public class CalculatorService : ICalculatorService
     {
         private readonly CalculatorDbContext _context;
+        private readonly ILogger<CalculatorService> _logger;
 
-        public CalculatorService(CalculatorDbContext context)
+        public CalculatorService(CalculatorDbContext context, ILogger<CalculatorService> logger)
         {
             _context = context;
-        }
-
-        public double Calculate(double number1, double number2, string operation)
-        {
-            return operation.ToLower() switch
-            {
-                "add" => number1 + number2,
-                "subtract" => number1 - number2,
-                "multiply" => number1 * number2,
-                "divide" => number2 == 0 ? throw new ArgumentException("Cannot divide by zero.") : number1 / number2,
-                _ => throw new ArgumentException("Invalid operation.")
-            };
+            _logger = logger;
         }
 
         public async Task<double> CalculateAsync(double number1, double number2, string operation, bool useStoredNumber)
         {
-            if (useStoredNumber)
+            try
             {
-                var storedNumber = await _context.StoredNumbers.FirstOrDefaultAsync();
-                number1 = storedNumber?.Number ?? 0; // Use stored number if available
+                if (useStoredNumber)
+                {
+                    var storedNumber = await _context.StoredNumbers.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
+                    if (storedNumber != null)
+                    {
+                        number1 = storedNumber.Number;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("No stored number available.");
+                    }
+                }
+
+                double result = operation.ToLower() switch
+                {
+                    "add" => number1 + number2,
+                    "subtract" => number1 - number2,
+                    "multiply" => number1 * number2,
+                    "divide" => number2 == 0 ? throw new DivideByZeroException("Cannot divide by zero.") : number1 / number2,
+                    _ => throw new ArgumentException("Invalid operation.")
+                };
+
+                await StoreNumberAsync(result);
+                return result;
             }
-
-            double result = operation.ToLower() switch
+            catch (Exception ex)
             {
-                "add" => number1 + number2,
-                "subtract" => number1 - number2,
-                "multiply" => number1 * number2,
-                "divide" => number2 == 0 ? throw new ArgumentException("Cannot divide by zero.") : number1 / number2,
-                _ => throw new ArgumentException("Invalid operation.")
-            };
-
-            await StoreNumberAsync(result); // Store the result for reuse
-            return result;
+                _logger.LogError(ex, "Error occurred in CalculateAsync.");
+                throw;
+            }
         }
 
         public async Task StoreNumberAsync(double number)
         {
-            var existing = await _context.StoredNumbers
-                .OrderByDescending(s => s.Id) // Ensures the most recent record is selected
-                .FirstOrDefaultAsync();
-
-            if (existing != null)
+            try
             {
-                existing.Number = number;
+                var existing = await _context.StoredNumbers.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
+                if (existing != null)
+                {
+                    existing.Number = number;
+                }
+                else
+                {
+                    await _context.StoredNumbers.AddAsync(new StoredNumber { Number = number });
+                }
+                await _context.SaveChangesAsync();
             }
-            else
+            catch (Exception ex)
             {
-                _context.StoredNumbers.Add(new StoredNumber { Number = number });
+                _logger.LogError(ex, "Error occurred in StoreNumberAsync.");
+                throw;
             }
-
-            await _context.SaveChangesAsync();
         }
 
         public async Task ResetStoredNumberAsync()
         {
-            var storedNumber = await _context.StoredNumbers.FirstOrDefaultAsync();
-            if (storedNumber != null)
+            try
             {
-                _context.StoredNumbers.Remove(storedNumber);
-                await _context.SaveChangesAsync();
+                var storedNumbers = await _context.StoredNumbers.ToListAsync();
+                if (storedNumbers.Any())
+                {
+                    _context.StoredNumbers.RemoveRange(storedNumbers);
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred in ResetStoredNumberAsync.");
+                throw;
             }
         }
 
         public async Task<double?> GetStoredNumberAsync()
         {
-            var storedNumber = await _context.StoredNumbers.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
-            return storedNumber?.Number;
+            try
+            {
+                var storedNumber = await _context.StoredNumbers.OrderByDescending(s => s.Id).FirstOrDefaultAsync();
+                return storedNumber?.Number;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred in GetStoredNumberAsync.");
+                throw;
+            }
         }
     }
 }

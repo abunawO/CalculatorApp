@@ -89,6 +89,11 @@ label {
     font-weight: bold;
     font-size: 16px;
     margin: 0;
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
 }
 
 /* Button Container Styling */
